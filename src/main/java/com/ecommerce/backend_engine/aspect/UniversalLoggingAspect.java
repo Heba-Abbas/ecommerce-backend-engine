@@ -7,26 +7,33 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import lombok.extern.slf4j.Slf4j;
 
 @Aspect
 @Component
-public class PerformanceLoggingAspect {
+@Slf4j
+public class UniversalLoggingAspect {
 
-    @Around("execution(* com.ecommerce.backend_engine.service.ProductService.*(..))")
-    public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around("execution(* com.ecommerce.backend_engine.service.*.*(..))")
+    public Object monitorAllServiceMethods(ProceedingJoinPoint joinPoint) throws Throwable {
+        String methodName = joinPoint.getSignature().getName();
         long start = System.currentTimeMillis();
-        Object proceed;
 
+        log.info(">>> START EXECUTION THE FUNCTION: {}", methodName);
+
+        Object proceed;
         try {
             proceed = joinPoint.proceed();
         } finally {
-
             long executionTime = System.currentTimeMillis() - start;
+            log.info("<<< FINISH : {} | IT TAKES: {} ms", methodName, executionTime);
+
 
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes != null) {
                 HttpServletResponse response = attributes.getResponse();
                 if (response != null && !response.isCommitted()) {
+
                     response.addHeader("X-Internal-Time", executionTime + "ms");
                 }
             }

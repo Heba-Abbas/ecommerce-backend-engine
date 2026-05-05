@@ -33,10 +33,10 @@ public class ProductService {
     public String purchaseProduct(Long productId, Integer quantity) {
 
         Product product = productRepository.findByIdWithLock(productId)
-                .orElseThrow(() -> new RuntimeException("المنتج غير موجود"));
+                .orElseThrow(() -> new RuntimeException("PRODUCT DOESN'T EXIST"));
 
         if (product.getStock() < quantity) {
-            throw new RuntimeException("المخزون غير كافي");
+            throw new RuntimeException("THE INVENTORY IS NOT ENOUGH");
         }
 
 
@@ -52,6 +52,6 @@ public class ProductService {
 
         orderRepository.save(order);
 
-        return "تمت العملية بنجاح.. رقم الطلب: " + order.getId() + System.currentTimeMillis();
+        return "SUCCESSFULLY DONE... .ORDER ID: " + order.getId() + System.currentTimeMillis();
     }
 }
