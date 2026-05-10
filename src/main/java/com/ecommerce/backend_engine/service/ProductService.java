@@ -1,57 +1,58 @@
 package com.ecommerce.backend_engine.service;
 
-import com.ecommerce.backend_engine.entity.Product;
-import com.ecommerce.backend_engine.entity.ProductOrder;
-import com.ecommerce.backend_engine.repository.OrderRepository;
-import com.ecommerce.backend_engine.repository.ProductRepository;
+import com.ecommerce.backend_engine.entity.*;
+import com.ecommerce.backend_engine.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    @Autowired private ProductRepository productRepository;
+    @Autowired private OrderRepository orderRepository;
 
-    @Autowired
-    private OrderRepository orderRepository;
-
-    //  عرض المنتجات
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
-
-    //  إضافة منتج
-    public Product addProduct(Product product) {
-        return productRepository.save(product);
+    // --- الطلب 1: حماية البيانات (Race Condition) ---
+    @Transactional
+    public void purchaseV1Unsafe(Long id, Integer qty) {
+        Product p = productRepository.findById(id).get(); // بدون قفل
+        if (p.getStock() >= qty) {
+            try { Thread.sleep(100); } catch (Exception e) {} // محاكاة تأخير لإظهار الخطأ
+            p.setStock(p.getStock() - qty);
+            productRepository.save(p);
+        }
     }
 
     @Transactional
-    public String purchaseProduct(Long productId, Integer quantity) {
-
-        Product product = productRepository.findByIdWithLock(productId)
-                .orElseThrow(() -> new RuntimeException("PRODUCT DOESN'T EXIST"));
-
-        if (product.getStock() < quantity) {
-            throw new RuntimeException("THE INVENTORY IS NOT ENOUGH");
+    public void purchaseV1Safe(Long id, Integer qty) {
+        Product p = productRepository.findByIdWithLock(id).get(); // استخدام القفل التشاؤمي
+        if (p.getStock() >= qty) {
+            p.setStock(p.getStock() - qty);
+            productRepository.save(p);
         }
+    }
 
+    // --- الطلب 2: إدارة الموارد (Thread Pool) ---
+    public void taskV2Limitless() {
+        // قبل التحسين: إنشاء خيوط جديدة بلا قيود
+        new Thread(() -> {
+            try { Thread.sleep(2000); } catch (Exception e) {}
+        }).start();
+    }
 
-        product.setStock(product.getStock() - quantity);
-        productRepository.save(product);
+    @Async("taskExecutor") // بعد التحسين: استخدام الـ Pool المحدد في الـ Config
+    public void taskV2Controlled() {
+        try { Thread.sleep(2000); } catch (Exception e) {}
+    }
 
-        ProductOrder order = new ProductOrder();
-        order.setProductId(productId);
-        order.setQuantity(quantity);
+    // --- الطلب 3: المعالجة غير المتزامنة (Async) ---
+    public void notifyV3Sync() {
+        try { Thread.sleep(1500); } catch (Exception e) {} // المشتري ينتظر هنا 1.5 ثانية
+    }
 
-        order.setOrderDate(LocalDateTime.now());
-        order.setStatus("SUCCESS");
-
-        orderRepository.save(order);
-
-        return "SUCCESSFULLY DONE... .ORDER ID: " + order.getId() + System.currentTimeMillis();
+    @Async("taskExecutor")
+    public void notifyV3Async() {
+        try { Thread.sleep(1500); } catch (Exception e) {} // المشتري لا ينتظر، المعالجة خلفية
     }
 }

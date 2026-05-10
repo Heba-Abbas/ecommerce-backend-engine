@@ -1,9 +1,9 @@
 package com.ecommerce.backend_engine.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "product")
 @Data @NoArgsConstructor @AllArgsConstructor
 public class Product {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
