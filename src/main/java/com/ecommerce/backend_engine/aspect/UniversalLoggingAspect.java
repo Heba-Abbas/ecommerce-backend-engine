@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UniversalLoggingAspect {
 
-    // قمنا بتعديل الـ Pointcut ليشمل الـ Controller والـ Service معاً
+
     @Around("execution(* com.ecommerce.backend_engine.service.*.*(..)) || execution(* com.ecommerce.backend_engine.controller.*.*(..))")
     public Object monitorAllServiceMethods(ProceedingJoinPoint joinPoint) throws Throwable {
         String methodName = joinPoint.getSignature().getName();
@@ -32,9 +32,9 @@ public class UniversalLoggingAspect {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes != null) {
                 HttpServletResponse response = attributes.getResponse();
-                // التأكد من أن الاستجابة لم تُرسل بعد ليتمكن الـ Aspect من إضافة الهيدر
+
                 if (response != null && !response.isCommitted()) {
-                    // سيظهر هذا الهيدر الآن في JMeter في كل الحالات
+                   
                     response.addHeader("X-Internal-Time", executionTime + "ms");
                     response.addHeader("X-Observed-Method", methodName);
                 }
