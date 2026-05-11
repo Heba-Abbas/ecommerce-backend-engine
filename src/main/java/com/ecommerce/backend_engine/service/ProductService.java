@@ -23,7 +23,6 @@ public class ProductService {
             p.setStock(p.getStock() - qty);
             productRepository.save(p);
 
-            // إضافة سجل الطلب ليظهر في قاعدة البيانات
             saveOrder(p, qty);
         }
     }
@@ -36,18 +35,17 @@ public class ProductService {
             p.setStock(p.getStock() - qty);
             productRepository.save(p);
 
-            // إضافة سجل الطلب ليظهر في قاعدة البيانات
             saveOrder(p, qty);
         }
     }
 
-    // تابع مساعد لتقليل تكرار الكود
+
     private void saveOrder(Product p, Integer qty) {
         ProductOrder order = new ProductOrder();
         order.setProduct(p);
         order.setQuantity(qty);
         order.setOrderDate(LocalDateTime.now());
-        order.setIsProcessed(false); // مهم جداً للاختبار الرابع
+        order.setIsProcessed(false);
         orderRepository.save(order);
     }
 

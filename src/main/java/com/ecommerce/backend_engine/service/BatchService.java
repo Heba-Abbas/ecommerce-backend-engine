@@ -39,19 +39,18 @@ public class BatchService {
         int pageSize = 50;
         int chunkCounter = 1;
 
-        // 1. حساب إجمالي الطلبات غير المعالجة قبل البدء (للإثبات فقط)
+        
         long initialUnprocessed = orderRepository.countByIsProcessedFalse();
         System.out.println("--------------------------------------------------");
         System.out.println("TOTAL UNPROCESSED ORDERS FOUND: " + initialUnprocessed);
         System.out.println("--------------------------------------------------");
 
-        // جلب أول دفعة
         Page<ProductOrder> orderPage = orderRepository.findByIsProcessedFalse(PageRequest.of(0, pageSize));
 
         while (orderPage.hasContent()) {
             List<ProductOrder> chunk = orderPage.getContent();
 
-            // 2. طباعة تفاصيل الدفعة الحالية
+
             System.out.println(">>> [CHUNK " + chunkCounter + "] Processing " + chunk.size() + " orders...");
 
             for (ProductOrder order : chunk) {
@@ -59,16 +58,16 @@ public class BatchService {
                 totalProcessed++;
             }
 
-            // حفظ الدفعة فوراً
+
             orderRepository.saveAllAndFlush(chunk);
 
-            // 3. حساب المتبقي بعد هذه الدفعة
+
             long remaining = orderRepository.countByIsProcessedFalse();
             System.out.println(">>> [DONE CHUNK " + chunkCounter + "] Remaining in DB: " + remaining);
             System.out.println("--------------------------------------------------");
 
             chunkCounter++;
-            // جلب الدفعة التالية
+
             orderPage = orderRepository.findByIsProcessedFalse(PageRequest.of(0, pageSize));
         }
 
