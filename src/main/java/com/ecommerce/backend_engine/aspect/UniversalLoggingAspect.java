@@ -34,7 +34,7 @@ public class UniversalLoggingAspect {
                 HttpServletResponse response = attributes.getResponse();
 
                 if (response != null && !response.isCommitted()) {
-                   
+
                     response.addHeader("X-Internal-Time", executionTime + "ms");
                     response.addHeader("X-Observed-Method", methodName);
                 }

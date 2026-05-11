@@ -21,7 +21,7 @@ public class NotificationService {
     }
 
     //  بعد التحسين
-    @Async("asyncExecutor")
+    @Async("taskExecutor")
     public void sendNotificationAsync(Long orderId) {
         log.info(">>> [ASYNC] START Sending Notification & Invoice for Order: {} | Thread: {}", orderId, Thread.currentThread().getName());
         try {

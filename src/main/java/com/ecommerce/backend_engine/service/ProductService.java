@@ -16,9 +16,9 @@ public class ProductService {
     // --- الطلب 1: حماية البيانات (Race Condition) ---
     @Transactional
     public void purchaseV1Unsafe(Long id, Integer qty) {
-        Product p = productRepository.findById(id).get(); // بدون قفل
+        Product p = productRepository.findById(id).get();
         if (p.getStock() >= qty) {
-            try { Thread.sleep(100); } catch (Exception e) {} // محاكاة تأخير لإظهار الخطأ
+            try { Thread.sleep(100); } catch (Exception e) {}
             p.setStock(p.getStock() - qty);
             productRepository.save(p);
         }
@@ -41,18 +41,18 @@ public class ProductService {
         }).start();
     }
 
-    @Async("taskExecutor") // بعد التحسين: استخدام الـ Pool المحدد في الـ Config
+    @Async("taskExecutor") // بعد التحسين
     public void taskV2Controlled() {
         try { Thread.sleep(2000); } catch (Exception e) {}
     }
 
     // --- الطلب 3: المعالجة غير المتزامنة (Async) ---
     public void notifyV3Sync() {
-        try { Thread.sleep(1500); } catch (Exception e) {} // المشتري ينتظر هنا 1.5 ثانية
+        try { Thread.sleep(1500); } catch (Exception e) {}
     }
 
     @Async("taskExecutor")
     public void notifyV3Async() {
-        try { Thread.sleep(1500); } catch (Exception e) {} // المشتري لا ينتظر، المعالجة خلفية
+        try { Thread.sleep(1500); } catch (Exception e) {}
     }
 }
