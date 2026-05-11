@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 
 @Service
 public class ProductService {
@@ -13,46 +14,52 @@ public class ProductService {
     @Autowired private ProductRepository productRepository;
     @Autowired private OrderRepository orderRepository;
 
-    // --- الطلب 1: حماية البيانات (Race Condition) ---
+    // --- الطلب 1: حماية البيانات (النسخة غير الآمنة) ---
     @Transactional
     public void purchaseV1Unsafe(Long id, Integer qty) {
-        Product p = productRepository.findById(id).get();
+        Product p = productRepository.findById(id).orElseThrow();
         if (p.getStock() >= qty) {
             try { Thread.sleep(100); } catch (Exception e) {}
             p.setStock(p.getStock() - qty);
             productRepository.save(p);
+
+            // إضافة سجل الطلب ليظهر في قاعدة البيانات
+            saveOrder(p, qty);
         }
     }
 
+    // --- الطلب 1: حماية البيانات (النسخة الآمنة) ---
     @Transactional
     public void purchaseV1Safe(Long id, Integer qty) {
-        Product p = productRepository.findByIdWithLock(id).get(); // استخدام القفل التشاؤمي
+        Product p = productRepository.findByIdWithLock(id).orElseThrow();
         if (p.getStock() >= qty) {
             p.setStock(p.getStock() - qty);
             productRepository.save(p);
+
+            // إضافة سجل الطلب ليظهر في قاعدة البيانات
+            saveOrder(p, qty);
         }
+    }
+
+    // تابع مساعد لتقليل تكرار الكود
+    private void saveOrder(Product p, Integer qty) {
+        ProductOrder order = new ProductOrder();
+        order.setProduct(p);
+        order.setQuantity(qty);
+        order.setOrderDate(LocalDateTime.now());
+        order.setIsProcessed(false); // مهم جداً للاختبار الرابع
+        orderRepository.save(order);
     }
 
     // --- الطلب 2: إدارة الموارد (Thread Pool) ---
     public void taskV2Limitless() {
-        // قبل التحسين: إنشاء خيوط جديدة بلا قيود
         new Thread(() -> {
             try { Thread.sleep(2000); } catch (Exception e) {}
         }).start();
     }
 
-    @Async("taskExecutor") // بعد التحسين
+    @Async("taskExecutor")
     public void taskV2Controlled() {
         try { Thread.sleep(2000); } catch (Exception e) {}
-    }
-
-    // --- الطلب 3: المعالجة غير المتزامنة (Async) ---
-    public void notifyV3Sync() {
-        try { Thread.sleep(1500); } catch (Exception e) {}
-    }
-
-    @Async("taskExecutor")
-    public void notifyV3Async() {
-        try { Thread.sleep(1500); } catch (Exception e) {}
     }
 }

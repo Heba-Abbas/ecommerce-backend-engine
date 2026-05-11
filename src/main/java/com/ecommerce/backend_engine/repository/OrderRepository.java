@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface OrderRepository extends JpaRepository<ProductOrder, Long> {
 
     Page<ProductOrder> findByIsProcessedFalse(Pageable pageable);
+    long countByIsProcessedFalse();
 }

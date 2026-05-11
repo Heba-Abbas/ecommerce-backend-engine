@@ -9,8 +9,11 @@ import java.time.LocalDateTime;
 public class ProductOrder {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long productId;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
     private Integer quantity;
     private LocalDateTime orderDate;
     private Boolean isProcessed = false;
+
 }
