@@ -39,7 +39,7 @@ public class BatchService {
         int pageSize = 50;
         int chunkCounter = 1;
 
-        
+
         long initialUnprocessed = orderRepository.countByIsProcessedFalse();
         System.out.println("--------------------------------------------------");
         System.out.println("TOTAL UNPROCESSED ORDERS FOUND: " + initialUnprocessed);
