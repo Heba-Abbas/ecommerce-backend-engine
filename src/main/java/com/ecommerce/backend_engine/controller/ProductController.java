@@ -12,7 +12,7 @@ public class ProductController {
     @Autowired private ApplicationEventPublisher eventPublisher;
     @Autowired private ProductService productService;
     @Autowired private BatchService batchService;
-    @Autowired private NotificationService notificationService; // إضافة حقن خدمة الإشعارات
+    @Autowired private NotificationService notificationService;
 
     // --- الطلب 1: حماية البيانات (Pessimistic Locking) ---
     @PostMapping("/v1/unsafe")
@@ -30,22 +30,7 @@ public class ProductController {
     public String v2c() { productService.taskV2Controlled(); return "Started Controlled Threads (Pool)"; }
 
 
-    // --- الطلب 3: المعالجة غير المتزامنة (Async) ---
-
-    @PostMapping("/v3/sync")
-    public String v3s(@RequestParam Long id) {
-        notificationService.sendNotificationSync(id);
-        return "Sync Notification Done (User Waited 1.5s)";
-    }
-
-    @PostMapping("/v3/async")
-    public String v3a(@RequestParam Long id) {
-        notificationService.sendNotificationAsync(id);
-        return "Async Notification Started (User Received Response Immediately)";
-    }
-
-
-    // --- الطلب 3: المعالجة غير المتزامنة (Async ) طريقة المحاضرة  ---
+    // --- الطلب 3: المعالجة غير المتزامنة (Async )   ---
     @PostMapping("/v3/order-sync-blocking")
     public String placeOrderSync(@RequestParam Long orderId) {
         notificationService.processFullOrderSync(orderId);

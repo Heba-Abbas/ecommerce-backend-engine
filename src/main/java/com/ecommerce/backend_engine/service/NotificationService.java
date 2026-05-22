@@ -10,32 +10,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class NotificationService {
 
-    //  3-قبل التحسين
-    public void sendNotificationSync(Long orderId) {
-        log.info(">>> [SYNC] START Sending Notification & Invoice for Order: {} | Thread: {}", orderId, Thread.currentThread().getName());
-        try {
-
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        log.info("<<< [SYNC] FINISH Sending Notification for Order: {}", orderId);
-    }
-
-    //  بعد التحسين
-    @Async("taskExecutor")
-    public void sendNotificationAsync(Long orderId) {
-        log.info(">>> [ASYNC] START Sending Notification & Invoice for Order: {} | Thread: {}", orderId, Thread.currentThread().getName());
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        log.info("<<< [ASYNC] FINISH Sending Notification for Order: {}", orderId);
-    }
-
-
-    //قبل التحسين طريقة المحاضرة
+    //قبل التحسين طلب3
     public void processFullOrderSync(Long orderId) {
         log.info(">>> [SYNC-BLOCKING] START Processing Order #{} | Thread: {}", orderId, Thread.currentThread().getName());
         try {
@@ -53,7 +28,7 @@ public class NotificationService {
         log.info("<<< [SYNC-BLOCKING] FINISH Processing Order #{}. Total Wait ~ 8.0s", orderId);
     }
 
-    //بعد التحسين طريقة المحاضرة باضافة  (Messaging Queue)
+    //بعد التحسين طلب3 باضافة  (Messaging Queue)
 
     @EventListener
     @Async("taskExecutor")
